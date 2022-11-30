@@ -24,6 +24,7 @@
 
 
 #define PI 3.14159265359f
+#define INV_PI 1.0f / PI
 #define EPSILON 0.001f
 
 

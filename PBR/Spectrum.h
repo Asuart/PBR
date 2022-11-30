@@ -199,10 +199,11 @@ public:
     float operator[](int32_t i) const {
         return c[i];
     }
-
+    /*
     inline Spectrum Lerp(float t, const Spectrum& s1, const Spectrum& s2) {
         return (1 - t) * s1 + t * s2;
     }
+    */
 
 protected:
     float c[nSpectrumSamples];
@@ -212,7 +213,7 @@ protected:
 
 
 
-float AverageSpectrumSamples(const float* lambda, const float* vals, int n, float lambdaStart, float lambdaEnd) {
+static float AverageSpectrumSamples(const float* lambda, const float* vals, int n, float lambdaStart, float lambdaEnd) {
     if (lambdaEnd <= lambda[0])     return vals[0];
     if (lambdaStart >= lambda[n - 1]) return vals[n - 1];
     if (n == 1) return vals[0];
@@ -299,6 +300,8 @@ public:
 
     }
 
+
+    /*
     void ToXYZ(float xyz[3]) const {
         xyz[0] = xyz[1] = xyz[2] = 0.f;
         for (int i = 0; i < nSpectralSamples; ++i) {
@@ -311,6 +314,7 @@ public:
         xyz[1] *= scale;
         xyz[2] *= scale;
     }
+    */
 
     float y() const {
         float yy = 0.f;
@@ -321,9 +325,11 @@ public:
 
     void ToRGB(float rgb[3]) const {
         float xyz[3];
-        ToXYZ(xyz);
+        //ToXYZ(xyz);
         XYZToRGB(xyz, rgb);
     }
+
+    /*
 
     RGBSpectrum ToRGBSpectrum() const;
 
@@ -334,6 +340,7 @@ public:
         return FromRGB(rgb, type);
     }
     SampledSpectrum(const RGBSpectrum& r, SpectrumType type = SpectrumType::Reflectance);
+    */
 
 private:
     static SampledSpectrum X, Y, Z;

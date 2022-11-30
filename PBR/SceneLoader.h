@@ -4,10 +4,12 @@
 #include "Scene.h"
 #include "SceneObject.h"
 
+class Scene;
+
 class SceneLoader {
 public:
 	static Scene* LoadScene(const std::string& filePath);
-
+	static SceneObject* LoadObject(const std::string& filePath);
 private:
 	static Scene* currentScene;
 	static SceneObject* currentObject;

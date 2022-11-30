@@ -7,7 +7,7 @@ CPURayTracer::CPURayTracer(int32_t width, int32_t height, bool accumulate) {
 	Reset();
 	SetupRenderQuad();
 	isRendering = false;
-	maxBounces = 1;
+	maxBounces = 4;
 }
 
 CPURayTracer::~CPURayTracer() {
@@ -95,18 +95,68 @@ void CPURayTracer::DrawFrame() {
 glm::vec3 CPURayTracer::PerPixel(uint32_t x, uint32_t y) {
 	glm::vec2 uv = glm::vec2((float)x / width, (float)y / height) + pixelSize * glm::vec2(RandomFloat(), RandomFloat());
 	Ray ray = activeCamera->GetRay(uv);
-	return TraceRay(ray, maxBounces);
+	return TraceRay(ray, maxBounces, glm::vec3(1.0));
 }
 
-glm::vec3 CPURayTracer::TraceRay(Ray ray, int32_t maxDepth) {
-	const glm::vec3 skyboxColor = glm::vec3(0);
-	glm::vec3 resultColor = glm::vec3(1.0);
 
+inline float MaxComponent(const glm::vec3& v) {
+	return glm::max(v.x, glm::max(v.y, v.z));
+}
+
+glm::vec3 CPURayTracer::TraceRay(Ray ray, int32_t maxDepth, glm::vec3 throughput) {
+	const glm::vec3 skyboxColor = glm::vec3(0.0);
+
+	if (maxDepth == 0)
+		return skyboxColor;
+
+	CollisionInfo collision;
+	activeScene->CheckCollision(ray, 0.001, 10000.0, collision);
+
+	if (!collision.collided)
+		return skyboxColor;
+
+	const Material& material = activeScene->materials[collision.materialIndex];
+	glm::vec3 f = glm::vec3(0.0f);
+
+	//float terminateProb = MaxComponent(throughput);
+	//if (RandomFloat() > terminateProb)
+	//	return f;
+
+	Ray scatteredRay;
+	glm::vec3 brdfMultiplier = material.Sample(ray, collision, scatteredRay);
+	//throughput *= brdfMultiplier / terminateProb;
+
+	f += TraceRay(scatteredRay, maxDepth - 1, throughput) * brdfMultiplier;
+
+
+	glm::vec3 onLight = activeScene->lights[0]->GetMesh().RandomInnerPoint();
+	glm::vec3 toLight = onLight - collision.position;
+	float lightDistance2 = glm::length(toLight) * glm::length(toLight);
+	toLight = glm::normalize(toLight);
+	if (glm::dot(collision.normal, toLight) < 0.001)
+		return f;
+	float lightArea = activeScene->lights[0]->GetMesh().area;
+	float pdf = (lightArea * fabs(glm::dot(collision.normal, toLight))) / lightDistance2;
+	Ray lightRay(collision.position, toLight);
+	activeScene->CheckCollision(lightRay, 0.001, 10000.0, collision);
+	if (!collision.collided)
+		return f;
+	const Material& lightMaterial = activeScene->materials[collision.materialIndex];
+	f += (material.albedo ) * (lightMaterial.lightColor  * pdf );
+
+	
+	return f;
+
+	//glm::vec3 indirectLight = TraceRay(scattered, maxDepth - 1, throughput) / pdf;
+
+
+	/*
+	glm::vec3 resultColor = glm::vec3(1.0);
 	CollisionInfo collision;
 	for (uint32_t i = 0; i < maxDepth; i++) {
 		activeScene->CheckCollision(ray, 0.001, 10000.0, collision);
 		if (!collision.collided)
-			return skyboxColor;
+			return resultColor * skyboxColor;
 
 		const Material& material = activeScene->materials[collision.materialIndex % activeScene->materials.size()];
 
@@ -120,15 +170,10 @@ glm::vec3 CPURayTracer::TraceRay(Ray ray, int32_t maxDepth) {
 		float pdf;
 		material.Scatter(ray, collision, color, scattered, pdf);
 
-		if (RandomFloat() > 0.8) {
-			scattered.direction += glm::normalize(scattered.direction - collision.position + glm::vec3(277, 555, 277));
-		}
-
 		resultColor *= color * material.ScatteringPdf(ray, collision, scattered) / pdf;
 		ray = scattered;
 	}
-
-	return resultColor;
+	*/
 }
 
 float CPURayTracer::GetProgress() const {

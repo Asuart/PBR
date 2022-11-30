@@ -1,5 +1,6 @@
 #pragma once
 #include "Renderer.h"
+#include "PDF.h"
 
 class CPURayTracer : public Renderer {
 public:
@@ -24,6 +25,6 @@ private:
 	glm::vec3* pixelData;
 	glm::vec3* pixelAccumulator;
 
-	glm::vec3 PerPixel(uint32_t x, uint32_t y);
-	glm::vec3 TraceRay(Ray ray, int32_t maxDepth);
+	inline glm::vec3 PerPixel(uint32_t x, uint32_t y);
+	glm::vec3 TraceRay(Ray ray, int32_t maxDepth, glm::vec3 throughput = glm::vec3(1.0));
 };

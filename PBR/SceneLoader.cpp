@@ -26,6 +26,25 @@ Scene* SceneLoader::LoadScene(const std::string& filePath) {
 	return s;
 }
 
+SceneObject* SceneLoader::LoadObject(const std::string& filePath) {
+	std::cout << "Loading scene from file: " << filePath << "\n";
+
+	Assimp::Importer importer;
+	const aiScene* scene = importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_FlipUVs);
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+		std::cout << "ERROR::ASSIMP::" << importer.GetErrorString() << "\n";
+		return nullptr;
+	}
+
+	currentObject = new SceneObject(scene->mRootNode->mName.C_Str());
+
+	ProcessNode(scene->mRootNode, scene);
+
+	SceneObject* s = currentObject;
+	currentObject = nullptr;
+	return s;
+}
+
 void SceneLoader::ProcessNode(aiNode* node, const aiScene* scene) {
 	if (node->mNumMeshes > 1) {
 		std::cout << "Scene Loader: Only one mesh allowed per node.\n";

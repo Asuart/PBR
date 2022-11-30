@@ -2,7 +2,7 @@
 #include "CollisionInfo.h"
 
 CollisionInfo::CollisionInfo()
-	: collided(false), backFace(false), position(glm::vec3(0)), normal(glm::vec3(0)), uv(glm::vec2(0)), distance(10000.0), materialIndex(0)
+	: collided(false), backFace(false), position(glm::vec3(0)), normal(glm::vec3(0)), uv(glm::vec2(0)), distance(10000.0), materialIndex(0), area(0.00001)
 {
 
 }

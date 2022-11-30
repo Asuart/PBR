@@ -18,6 +18,9 @@ void SceneObject::AddChild(SceneObject* child) {
 void SceneObject::SetTransform(const Transform& _transform) {
 	transform = _transform;
 	mesh.ApplyTransform(transform);
+	for (int32_t i = 0; i < children.size(); i++) {
+		children[i]->SetTransform(_transform);
+	}
 }
 
 const Transform& SceneObject::GetTransform() const {

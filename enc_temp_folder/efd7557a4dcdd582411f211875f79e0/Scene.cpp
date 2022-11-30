@@ -261,9 +261,9 @@ void Scene::CreateCornellBoxScene() {
 	//spider->SetTransform(Transform(glm::vec3(270, 270, 270), glm::vec3(0), glm::vec3(15)));
 	//rootObject->AddChild(spider);
 
-	SceneObject* stalin = SceneLoader::LoadObject("C:/Users/User/Desktop/PBR/models/torus.obj");
+	SceneObject* stalin = SceneLoader::LoadObject("D:/repositories/MathVisualiser/ModelLoader/untitled.stl");
 	stalin->SetMaterial(2);
-	stalin->SetTransform(Transform(glm::vec3(210, 250, 270), glm::vec3(0, PI, 0), glm::vec3(32)));
+	stalin->SetTransform(Transform(glm::vec3(210, 150, 270), glm::vec3(0, PI, 0), glm::vec3(2.2)));
 	rootObject->AddChild(stalin);
 
 	UpdateObjectsWithMeshes();

@@ -7,6 +7,7 @@
 #include "Mesh.h"
 #include "Bone.h"
 
+
 class SceneObject {
 public:
 	std::string name;

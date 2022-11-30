@@ -25,6 +25,10 @@ struct Material {
 	virtual bool Scatter(const Ray& ray, const CollisionInfo& collision, glm::vec3& attenuation, Ray& scattered, float& outPdf) const;
 	virtual bool Emitted(const glm::vec2& uv, const glm::vec3& p, glm::vec3& outLightColor) const;
 	float ScatteringPdf(const Ray& ray, const CollisionInfo& collision, const Ray& scattered) const;
+
+	inline constexpr glm::vec3 Evaluate() const;
+	inline constexpr float Pdf() const;
+	glm::vec3 Sample(const Ray& ray, const CollisionInfo& collision, Ray& scatteredRay) const;
 };
 
 void TestVectorIsUnit(const glm::vec3& v);

@@ -6,6 +6,9 @@
 #include "SpaceTreeNode.h"
 #include "Textures.h"
 #include "Material.h"
+#include "SceneLoader.h"
+
+class SceneLoader;
 
 class Scene {
 public:
@@ -14,6 +17,7 @@ public:
 	std::vector<Sphere> spheres;
 	std::vector<Camera> cameras;
 	SceneObject* rootObject;
+	std::vector<SceneObject*> lights;
 	Camera* mainCamera;
 
 	Scene();

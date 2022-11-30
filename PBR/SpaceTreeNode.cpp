@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "SpaceTreeNode.h"
 
-SpaceTreeNode::SpaceTreeNode(std::vector<SceneObject*> _objects, int32_t axisIndex, float time0, float time1)
+SpaceTreeNode::SpaceTreeNode(std::vector<SceneObject*> _objects, int32_t axisIndex)
 	: leaf(false)
 {
 	BoundingBox box;
@@ -20,7 +20,7 @@ SpaceTreeNode::SpaceTreeNode(std::vector<SceneObject*> _objects, int32_t axisInd
 	}
 
 	std::sort(_objects.begin(), _objects.end(),
-		[axisIndex, time0, time1](SceneObject* const& a, SceneObject* const& b) { 
+		[axisIndex](SceneObject* const& a, SceneObject* const& b) { 
 			BoundingBox box1 = a->GetMesh().GetWorldBounds();
 			BoundingBox box2 = b->GetMesh().GetWorldBounds();
 			return box1.pMin[axisIndex] < box2.pMin[axisIndex]; 
@@ -34,8 +34,8 @@ SpaceTreeNode::SpaceTreeNode(std::vector<SceneObject*> _objects, int32_t axisInd
 		right.push_back(_objects[i]);
 	}
 
-	children.push_back(new SpaceTreeNode(left, (axisIndex + 1) % 3, time0, time1));
-	children.push_back(new SpaceTreeNode(right, (axisIndex + 1) % 3, time0, time1));
+	children.push_back(new SpaceTreeNode(left, (axisIndex + 1) % 3));
+	children.push_back(new SpaceTreeNode(right, (axisIndex + 1) % 3));
 }
 
 SpaceTreeNode::~SpaceTreeNode() {
@@ -48,9 +48,14 @@ CollisionInfo SpaceTreeNode::CheckCollision(Ray& ray, float tMin, float tMax) co
 	if (!bounds.TestHit(ray, tMin, tMax)) 
 		return CollisionInfo();
 	if (leaf) {
-		CollisionInfo col;
-		//objects.TestCollision(ray, tMin, tMax, col);
-		return col;
+		CollisionInfo outCollision, col;
+		for (uint32_t i = 0; i < objects.size(); i++) {
+			if (objects[i]->TestCollision(ray, tMin, tMax, col)) {
+				tMax = col.distance;
+				outCollision = col;
+			}
+		}
+		return outCollision;
 	}
 	CollisionInfo col;
 	for (uint32_t i = 0; i < children.size(); i++) {
@@ -60,3 +65,6 @@ CollisionInfo SpaceTreeNode::CheckCollision(Ray& ray, float tMin, float tMax) co
 	}
 	return col;
 }
+
+
+

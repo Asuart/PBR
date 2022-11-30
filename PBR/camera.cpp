@@ -120,6 +120,6 @@ void Camera::RecalculateView() {
 }
 
 void Camera::RecalculateProjection() {
-	mProjection = glm::perspective(glm::radians(fov), aspect, 0.1f, 1000.0f);
+	mProjection = glm::perspective(glm::radians(fov), aspect, 0.1f, 10000.0f);
 	mInverseProjection = glm::inverse(mProjection);
 }

@@ -3,7 +3,7 @@
 
 
 Material::Material(glm::vec3 _albedo, float _roughness, float _metallic, float _transparency, float _refraction)
-	: albedo(_albedo), roughness(_roughness), metallic(_metallic), transparency(_transparency), refraction(_refraction), texture(nullptr), ao(0), isLightSource(false), lightColor(glm::vec3(15.0))
+	: albedo(_albedo), roughness(_roughness), metallic(_metallic), transparency(_transparency), refraction(_refraction), texture(nullptr), ao(0), isLightSource(false), lightColor(glm::vec3(0.0))
 {
 
 }
@@ -37,11 +37,12 @@ float Reflectance(float cosine, float ref_idx) {
 
 
 bool Material::Scatter(const Ray& ray, const CollisionInfo& collision, glm::vec3& attenuation, Ray& scattered, float& outPdf) const {
-	glm::vec3 scatterDirection = glm::normalize(RandomInHemisphere(collision.normal));
+	ONB uvw;
+	uvw.build_from_w(collision.normal);
+	glm::vec3 scatterDirection = uvw.local(RandomCosineDirection());
 	scattered = Ray(collision.position, scatterDirection, ray.time);
 	attenuation = albedo;
-	outPdf = glm::dot(collision.normal, scattered.direction) / glm::pi<float>();
-	if (texture) attenuation *= texture->Sample(collision.uv, collision.position);
+	outPdf = glm::dot(uvw.w(), scattered.direction) / PI;
 	return true;
 
 	// metal
@@ -105,4 +106,22 @@ bool Material::Emitted(const glm::vec2& uv, const glm::vec3& p, glm::vec3& outLi
 float Material::ScatteringPdf(const Ray& ray, const CollisionInfo& collision, const Ray& scattered) const {
 	float cosine = glm::dot(collision.normal, glm::normalize(scattered.direction));
 	return cosine < 0 ? 0 : cosine / glm::pi<float>();
+}
+
+inline constexpr glm::vec3 Material::Evaluate() const {
+	return albedo / PI;
+}
+
+inline constexpr float Material::Pdf() const {
+	return 1.0f / (2.0f * PI);
+}
+
+glm::vec3 Material::Sample(const Ray& ray, const CollisionInfo& collision, Ray& scatteredRay) const {
+	ONB uvw;
+	uvw.build_from_w(collision.normal);
+	glm::vec3 direction = glm::normalize(uvw.local(RandomCosineDirection()));
+	scatteredRay.origin = collision.position;
+	scatteredRay.direction = direction;
+	float cosTheta = glm::abs(glm::dot(collision.normal, scatteredRay.direction));
+	return (cosTheta * Evaluate()) / Pdf();
 }

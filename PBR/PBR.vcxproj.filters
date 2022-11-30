@@ -135,6 +135,9 @@
     <ClCompile Include="Animator.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="PDF.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RendererWindow.h">
@@ -237,6 +240,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Spectrum.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="PDF.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

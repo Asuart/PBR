@@ -8,6 +8,7 @@ RendererWindow::RendererWindow(int32_t width, int32_t height)
 	InitGL();
 
 	m_renderer = new CPURayTracer(width, height);
+	//m_renderer = new DefaultRenderer();
 
 	UserInput::SetInputWindow(m_mainWindow);
 }
@@ -61,6 +62,12 @@ void RendererWindow::Start() {
 
 		timeAccumulator += Time::deltaTime;
 		if (timeAccumulator > 0.1) {
+
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			m_renderer->DrawFrame();
+			glfwSwapBuffers(m_mainWindow);
+
+
 			timeAccumulator = 0;
 			std::string newTitle = "Sample: " + std::to_string(m_renderer->CurrentSample()) + "  (" + std::to_string(m_renderer->GetProgress() * 100.0f).substr(0,5) + "%)";
 			glfwSetWindowTitle(m_mainWindow, newTitle.c_str());
