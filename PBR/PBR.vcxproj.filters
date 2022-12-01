@@ -138,6 +138,9 @@
     <ClCompile Include="PDF.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="MeshBVH.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RendererWindow.h">
@@ -243,6 +246,9 @@
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="PDF.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshBVH.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

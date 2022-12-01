@@ -39,7 +39,10 @@ const Mesh& SceneObject::GetMesh() const {
 
 void SceneObject::SetMaterial(int32_t _materialIndex) {
 	materialIndex = _materialIndex;
-	mesh.SetMaterial(materialIndex);
+	mesh.SetMaterial(_materialIndex);
+	for (int32_t i = 0; i < children.size(); i++) {
+		children[i]->SetMaterial(_materialIndex);
+	}
 }
 
 int32_t SceneObject::GetMaterial() const {

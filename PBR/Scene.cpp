@@ -255,34 +255,15 @@ void Scene::CreateCornellBoxScene() {
 	box->SetMesh(Mesh::CreateBox(box2Size));
 	rootObject->AddChild(box);
 
-
-	//SceneObject* spider = SceneLoader::LoadObject("D:/repositories/MathVisualiser/ModelLoader/dae/spider.dae");
-	//spider->SetMaterial(2);
-	//spider->SetTransform(Transform(glm::vec3(270, 270, 270), glm::vec3(0), glm::vec3(15)));
-	//rootObject->AddChild(spider);
-
-	SceneObject* stalin = SceneLoader::LoadObject("C:/Users/User/Desktop/PBR/models/torus.obj");
-	stalin->SetMaterial(2);
-	stalin->SetTransform(Transform(glm::vec3(210, 250, 270), glm::vec3(0, PI, 0), glm::vec3(32)));
-	rootObject->AddChild(stalin);
+	SceneObject* torus = SceneLoader::LoadObject("../../PBR/models/torus.obj");
+	torus->SetTransform(Transform(glm::vec3(210, 250, 270), glm::vec3(0, PI, 0), glm::vec3(32)));
+	torus->SetMaterial(2);
+	rootObject->AddChild(torus);
 
 	UpdateObjectsWithMeshes();
 }
 
 bool Scene::CheckCollision(Ray ray, float tMin, float tMax, CollisionInfo& outCollision) const {
-	/*
-	CollisionInfo col;
-	bool hitAnything = false;
-	for (uint32_t i = 0; i < objectsWithMeshes.size(); i++) {
-		if (objectsWithMeshes[i]->TestCollision(ray, tMin, tMax, col)) {
-			hitAnything = true;
-			tMax = col.distance;
-			outCollision = col;
-		}
-	}
-	return hitAnything;
-	*/
-	
 	outCollision = spaceTree->CheckCollision(ray, tMin, tMax);
 	return outCollision.collided;
 }
@@ -292,7 +273,7 @@ const std::vector<SceneObject*>& Scene::GetObjectWithMeshes() const {
 }
 
 void Scene::UpdateObjectsWithMeshes() {
-	delete spaceTree;
+	if(spaceTree) delete spaceTree;
 	objectsWithMeshes.clear();
 	FillObjectsWithMeshesList(rootObject);
 	spaceTree = new SpaceTreeNode(objectsWithMeshes);
