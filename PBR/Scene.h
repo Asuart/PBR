@@ -19,6 +19,7 @@ public:
 	SceneObject* rootObject;
 	std::vector<SceneObject*> lights;
 	Camera* mainCamera;
+	glm::vec3 skyColor;
 
 	Scene();
 	~Scene();

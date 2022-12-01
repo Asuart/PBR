@@ -14,7 +14,7 @@
 
 class RendererWindow {
 public:
-	RendererWindow(int32_t width = 800, int32_t height = 800);
+	RendererWindow(int32_t width = 600, int32_t height = 600);
 	~RendererWindow();
 
 	void Start();

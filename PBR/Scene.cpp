@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Scene.h"
 
-Scene::Scene() : spaceTree(nullptr), rootObject(nullptr) {
+Scene::Scene() : spaceTree(nullptr), rootObject(nullptr), skyColor(glm::vec3(0)) {
 	Material material_ground;
 	material_ground.albedo = glm::vec3(0.8, 0.8, 0.0);
 	materials.push_back(material_ground);
@@ -9,11 +9,11 @@ Scene::Scene() : spaceTree(nullptr), rootObject(nullptr) {
 	glm::vec3 lookfrom(0, 0, 10);
 	glm::vec3 lookat(0, 0, 0);
 	glm::vec3 vup(0, 1, 0);
-	auto dist_to_focus = glm::length(lookfrom - lookat);
-	auto aperture = 2.0;
+	float dist_to_focus = glm::length(lookfrom - lookat);
+	float aperture = 2.0;
 	Camera cam(lookfrom, lookat, vup, 45, 1.0, aperture, dist_to_focus);
 	cameras.push_back(cam);
-	mainCamera = &cameras[0];
+	mainCamera = &cameras[cameras.size() - 1];
 }
 
 Scene::~Scene() {
@@ -29,11 +29,11 @@ void Scene::CreateBoxScene() {
 	glm::vec3 lookfrom(0, 0, 4);
 	glm::vec3 lookat(0, 0, 0);
 	glm::vec3 vup(0, 1, 0);
-	auto dist_to_focus = glm::length(lookfrom - lookat);
-	auto aperture = 2.0;
+	float dist_to_focus = glm::length(lookfrom - lookat);
+	float aperture = 2.0;
 	Camera cam(lookfrom, lookat, vup, 45, 1.0, aperture, dist_to_focus);
 	cameras.push_back(cam);
-	mainCamera = &cameras[0];
+	mainCamera = &cameras[cameras.size() - 1];
 
 	rootObject = new SceneObject("root");
 	glm::vec3 box1Size = glm::vec3(0.5);
@@ -48,11 +48,12 @@ void Scene::CreateTestScene() {
 	glm::vec3 lookfrom(0, 0, 4);
 	glm::vec3 lookat(0, 0, 0);
 	glm::vec3 vup(0, 1, 0);
-	auto dist_to_focus = glm::length(lookfrom - lookat);
-	auto aperture = 2.0;
-	Camera cam(lookfrom, lookat, vup, 20, 16.0f / 9.0f, aperture, dist_to_focus);
+	float dist_to_focus = glm::length(lookfrom - lookat);
+	float aperture = 2.0;
+	Camera cam(lookfrom, lookat, vup, 20, 1.0f, aperture, dist_to_focus);
 	cameras.push_back(cam);
 	mainCamera = &cameras[cameras.size() - 1];
+	skyColor = glm::vec3(0.5, 0.7, 1.0);
 
 	Material testMaterial;
 	testMaterial.albedo = glm::vec3(1.0);
@@ -92,18 +93,22 @@ void Scene::CreateTestScene() {
 }
 
 void Scene::CreateRandomScene() {
-	/*
 	glm::vec3 lookfrom(12, 2, 3);
 	glm::vec3 lookat(0, 0, 0);
 	glm::vec3 vup(0, 1, 0);
-	auto dist_to_focus = 10.0;
-	auto aperture = 0.1;
-	Camera cam(lookfrom, lookat, vup, 20, 16.0f / 9.0f, aperture, dist_to_focus);
-	mainCamera = &cam;
+	float dist_to_focus = 10.0;
+	float aperture = 0.1;
+	Camera cam(lookfrom, lookat, vup, 20, 1.0, aperture, dist_to_focus);
+	cameras.push_back(cam);
+	mainCamera = &cameras[cameras.size() - 1];
+	skyColor = glm::vec3(0.5, 0.7, 1.0);
 
 	auto checker = std::make_shared<CheckerTexture>(glm::vec3(0.2, 0.3, 0.1), glm::vec3(0.9, 0.9, 0.9));
-	materials.push_back(Material(glm::vec3(1.0f), checker));
-	m_objects.push_back(new Sphere(glm::vec3(0, -1000, 0), 1000, 0));
+	Material checkerMaterial;
+	checkerMaterial.albedo = glm::vec3(1.0f);
+	checkerMaterial.texture = checker;
+	spheres.push_back(Sphere(glm::vec3(0, -1000, 0), 1000, materials.size()));
+	materials.push_back(checkerMaterial);
 
 	for (int a = -11; a < 11; a++) {
 		for (int b = -11; b < 11; b++) {
@@ -111,46 +116,46 @@ void Scene::CreateRandomScene() {
 			glm::vec3 center(a + 0.9 * RandomFloat(), 0.2, b + 0.9 * RandomFloat());
 
 			if (glm::length(center - glm::vec3(4, 0.2, 0)) > 0.9) {
-				Material* sphere_material;
+				Material sphere_material;
 
 				if (choose_mat < 0.8) {
-					// diffuse
-					auto albedo = RandomVector(0.0, 1.0) * RandomVector(0.0, 1.0);
-					sphere_material = new Lambertian(albedo);
-					auto center2 = center + glm::vec3(0, RandomFloat(0, 0.5), 0);
-					m_objects.push_back(new MovingSphere(center, center2, 0.0, 1.0, 0.2, m_materials.size()));
-					m_materials.push_back(sphere_material);
+					sphere_material.albedo = RandomVector(0.0, 1.0) * RandomVector(0.0, 1.0);
+					glm::vec3 center2 = center + glm::vec3(0, RandomFloat(0, 0.5), 0);
 				}
 				else if (choose_mat < 0.95) {
-					// metal
-					auto albedo = RandomVector(0.5, 1);
-					auto fuzz = RandomFloat(0, 0.5);
-					sphere_material = new Metal(albedo, fuzz);
-					m_objects.push_back(new Sphere(center, 0.2, m_materials.size()));
-					m_materials.push_back(sphere_material);
+					sphere_material.albedo = RandomVector(0.5, 1);
+					sphere_material.roughness = RandomFloat(0, 0.5);
+					sphere_material.metallic = 0.5;
 				}
 				else {
-					// glass
-					sphere_material = new Glass(glm::vec3(1.0), 0.0, 1.5);
-					m_objects.push_back(new Sphere(center, 0.2, m_materials.size()));
-					m_materials.push_back(sphere_material);
+					sphere_material.albedo = glm::vec3(1.0f);
+					sphere_material.transparency = 1.0f;
+					sphere_material.refraction = 1.7;
 				}
+				spheres.push_back(Sphere(center, 0.2, materials.size()));
+				materials.push_back(sphere_material);
 			}
 		}
 	}
 
-	auto material1 = new Glass(glm::vec3(1.0), 0, 1.5);
-	m_objects.push_back(new Sphere(glm::vec3(0, 1, 0), 1.0, m_materials.size()));
-	m_materials.push_back(material1);
+	Material material1;
+	material1.albedo = glm::vec3(1.0f);
+	material1.transparency = 1.0f;
+	material1.refraction = 1.7;
+	spheres.push_back(Sphere(glm::vec3(0, 1, 0), 1.0, materials.size()));
+	materials.push_back(material1);
 
-	auto material2 = new Lambertian(glm::vec3(0.4, 0.2, 0.1));
-	m_objects.push_back(new Sphere(glm::vec3(-4, 1, 0), 1.0, m_materials.size()));
-	m_materials.push_back(material2);
+	Material material2;
+	material2.albedo = glm::vec3(0.4, 0.2, 0.1);
+	spheres.push_back(Sphere(glm::vec3(-4, 1, 0), 1.0, materials.size()));
+	materials.push_back(material2);
 
-	auto material3 =new Metal(glm::vec3(0.7, 0.6, 0.5), 0.0);
-	m_objects.push_back(new Sphere(glm::vec3(4, 1, 0), 1.0, m_materials.size()));
-	m_materials.push_back(material3);
-	*/
+	Material material3;
+	material3.albedo = glm::vec3(0.7, 0.6, 0.5);
+	material3.roughness = 0.0;
+	material3.metallic = 0.5;
+	spheres.push_back(Sphere(glm::vec3(4, 1, 0), 1.0, materials.size()));
+	materials.push_back(material3);
 }
 
 void Scene::CreateCornellBoxScene() {
@@ -255,7 +260,7 @@ void Scene::CreateCornellBoxScene() {
 	box->SetMesh(Mesh::CreateBox(box2Size));
 	rootObject->AddChild(box);
 
-	SceneObject* torus = SceneLoader::LoadObject("../../PBR/models/torus.obj");
+	SceneObject* torus = SceneLoader::LoadObject("../models/torus.obj");
 	torus->SetTransform(Transform(glm::vec3(210, 250, 270), glm::vec3(0, PI, 0), glm::vec3(32)));
 	torus->SetMaterial(2);
 	rootObject->AddChild(torus);
@@ -264,7 +269,15 @@ void Scene::CreateCornellBoxScene() {
 }
 
 bool Scene::CheckCollision(Ray ray, float tMin, float tMax, CollisionInfo& outCollision) const {
-	outCollision = spaceTree->CheckCollision(ray, tMin, tMax);
+	if(spaceTree) outCollision = spaceTree->CheckCollision(ray, tMin, tMax);
+	if (outCollision.collided) {
+		tMax = outCollision.distance;
+	}
+	for (int32_t i = 0; i < spheres.size(); i++) {
+		if (spheres[i].TestCollision(ray, tMin, tMax, outCollision)) {
+			tMax = outCollision.distance;
+		}
+	}
 	return outCollision.collided;
 }
 

@@ -104,16 +104,14 @@ inline float MaxComponent(const glm::vec3& v) {
 }
 
 glm::vec3 CPURayTracer::TraceRay(Ray ray, int32_t maxDepth, glm::vec3 throughput) {
-	const glm::vec3 skyboxColor = glm::vec3(0.0);
-
 	if (maxDepth == 0)
-		return skyboxColor;
+		return glm::vec3(0);
 
 	CollisionInfo collision;
 	activeScene->CheckCollision(ray, 0.001, 10000.0, collision);
 
 	if (!collision.collided)
-		return skyboxColor;
+		return activeScene->skyColor;
 
 	const Material& material = activeScene->materials[collision.materialIndex];
 	glm::vec3 f = glm::vec3(0.0f);
@@ -128,23 +126,23 @@ glm::vec3 CPURayTracer::TraceRay(Ray ray, int32_t maxDepth, glm::vec3 throughput
 
 	f += TraceRay(scatteredRay, maxDepth - 1, throughput) * brdfMultiplier;
 
+	for (int32_t i = 0; i < activeScene->lights.size(); i++) {
+		glm::vec3 onLight = activeScene->lights[i]->GetMesh().RandomInnerPoint();
+		glm::vec3 toLight = onLight - collision.position;
+		float lightDistance2 = glm::length(toLight) * glm::length(toLight);
+		toLight = glm::normalize(toLight);
+		if (glm::dot(collision.normal, toLight) < 0.001)
+			continue;
+		float lightArea = activeScene->lights[i]->GetMesh().area;
+		float pdf = (lightArea * fabs(glm::dot(collision.normal, toLight))) / lightDistance2;
+		Ray lightRay(collision.position, toLight);
+		activeScene->CheckCollision(lightRay, 0.001, 10000.0, collision);
+		if (!collision.collided)
+			continue;
+		const Material& lightMaterial = activeScene->materials[collision.materialIndex];
+		f += (material.albedo) * (lightMaterial.lightColor * pdf);
+	}
 
-	glm::vec3 onLight = activeScene->lights[0]->GetMesh().RandomInnerPoint();
-	glm::vec3 toLight = onLight - collision.position;
-	float lightDistance2 = glm::length(toLight) * glm::length(toLight);
-	toLight = glm::normalize(toLight);
-	if (glm::dot(collision.normal, toLight) < 0.001)
-		return f;
-	float lightArea = activeScene->lights[0]->GetMesh().area;
-	float pdf = (lightArea * fabs(glm::dot(collision.normal, toLight))) / lightDistance2;
-	Ray lightRay(collision.position, toLight);
-	activeScene->CheckCollision(lightRay, 0.001, 10000.0, collision);
-	if (!collision.collided)
-		return f;
-	const Material& lightMaterial = activeScene->materials[collision.materialIndex];
-	f += (material.albedo ) * (lightMaterial.lightColor  * pdf );
-
-	
 	return f;
 
 	//glm::vec3 indirectLight = TraceRay(scattered, maxDepth - 1, throughput) / pdf;
