@@ -8,18 +8,18 @@ CPURayTracer::CPURayTracer(int32_t width, int32_t height, bool accumulate) {
 	SetupRenderQuad();
 	isRendering = false;
 	maxBounces = 32;
-
+	sampler = new Sampler(this, 4, 4);
 }
 
 CPURayTracer::~CPURayTracer() {
 	renderThread.detach();
 	delete[] pixelData;
 	delete[] pixelAccumulator;
+	delete[] sampler;
 }
 
 void CPURayTracer::Reset() {
 	sample = 0;
-	currentPixel = 0;
 	for (uint32_t i = 0; i < width * height; i++) {
 		pixelData[i] = glm::vec3(0);
 		pixelAccumulator[i] = glm::vec3(0);
@@ -46,12 +46,12 @@ void CPURayTracer::Resize(int32_t _width, int32_t _height) {
 
 void CPURayTracer::RenderSample() {
 	Time::MeasureStart("Time to sample");
-	currentPixel = 0;
-	for (uint32_t y = 0; y < height; y++) {
-		for (uint32_t x = 0; x < width; x++, currentPixel++) {
+	sampler->Dispatch();
+	/*for (uint32_t y = 0; y < height; y++) {
+		for (uint32_t x = 0; x < width; x++) {
 			PerPixel(x, y);
 		}
-	}
+	}*/
 	if (accumulate) sample++;
 	frameReady = true;
 	Time::MeasureEnd("Time to sample");
@@ -96,8 +96,8 @@ void CPURayTracer::PerPixel(uint32_t x, uint32_t y) const {
 	glm::vec2 uv = glm::vec2((float)x / width, (float)y / height) + pixelSize * glm::vec2(RandomFloat(), RandomFloat());
 	Ray ray = activeCamera->GetRay(uv);
 	glm::vec3 color = TraceRay(ray, maxBounces, glm::vec3(1.0));
-	if (accumulate) pixelAccumulator[currentPixel] += color;
-	else pixelAccumulator[currentPixel] = color;
+	if (accumulate) pixelAccumulator[y * width + x] += color;
+	else pixelAccumulator[y * width + x] = color;
 }
 
 inline float MaxComponent(const glm::vec3& v) {
@@ -149,5 +149,5 @@ glm::vec3 CPURayTracer::TraceRay(Ray ray, int32_t maxDepth, glm::vec3 throughput
 }
 
 float CPURayTracer::GetProgress() const {
-	return (float)currentPixel / (width * height - 1);
+	return (float)0.0 / (width * height - 1);
 }

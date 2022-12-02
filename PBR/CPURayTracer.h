@@ -28,7 +28,6 @@ private:
 	std::thread renderThread;
 	bool isRendering;
 
-	uint32_t currentPixel;
 	glm::vec3* pixelData;
 	glm::vec3* pixelAccumulator;
 

@@ -1,8 +1,13 @@
 #include "pch.h"
 #include "Random.h"
 
+
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_real_distribution<> dist(0, 1);
+
 inline float RandomFloat() {
-	return rand() / (RAND_MAX + 1.0);
+	return dist(gen);
 }
 
 inline float RandomFloat(float min, float max) {

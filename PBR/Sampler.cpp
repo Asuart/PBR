@@ -27,17 +27,18 @@ Sampler::~Sampler() {}
 
 void Sampler::Dispatch() {
 	for (int32_t i = 0; i < quads.size(); i++) {
-		auto renderThread = new std::thread([&, i]() {
-				SampleQuad(i);
-			});
-		renderThreads.push_back(renderThread);
+		renderThreads.push_back(new std::thread(std::thread([&, i]() {
+			SampleQuad(i);
+			})));
 	}
+
 	for (int32_t i = 0; i < renderThreads.size(); i++) {
 		renderThreads[i]->join();
 	}
 	for (int32_t i = 0; i < renderThreads.size(); i++) {
 		delete renderThreads[i];
 	}
+	renderThreads.clear();
 }
 
 void Sampler::SampleQuad(int32_t i) {

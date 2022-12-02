@@ -9,6 +9,7 @@ struct SamplerQuad {
 	SamplerQuad(glm::ivec2 start, glm::ivec2 end);
 };
 
+
 class Sampler {
 public:
 	const CPURayTracer* renderer;
