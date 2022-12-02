@@ -1,6 +1,9 @@
 #pragma once
 #include "Renderer.h"
 #include "PDF.h"
+#include "Sampler.h"
+
+class Sampler;
 
 class CPURayTracer : public Renderer {
 public:
@@ -18,6 +21,10 @@ public:
 	virtual float GetProgress() const override;
 
 private:
+
+	Sampler* sampler;
+
+
 	std::thread renderThread;
 	bool isRendering;
 
@@ -25,6 +32,8 @@ private:
 	glm::vec3* pixelData;
 	glm::vec3* pixelAccumulator;
 
-	inline glm::vec3 PerPixel(uint32_t x, uint32_t y);
-	glm::vec3 TraceRay(Ray ray, int32_t maxDepth, glm::vec3 throughput = glm::vec3(1.0));
+	void PerPixel(uint32_t x, uint32_t y) const;
+	glm::vec3 TraceRay(Ray ray, int32_t maxDepth, glm::vec3 throughput = glm::vec3(1.0)) const;
+
+	friend class Sampler;
 };

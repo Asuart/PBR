@@ -4,6 +4,7 @@
 #include "Scene.h"
 #include "ShaderLibrary.h"
 
+
 class Renderer {
 public:
 	virtual void Reset() = 0;
@@ -23,6 +24,7 @@ public:
 	virtual bool FrameIsReady() const;
 	virtual void SetAccumulate(bool state);
 	virtual void SetFrameReady(bool state);
+	glm::ivec2 GetTextureSize() const;
 protected:
 	uint32_t width, height;
 	glm::vec2 pixelSize;

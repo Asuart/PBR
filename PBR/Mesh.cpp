@@ -63,11 +63,11 @@ bool Mesh::TestCollision(const Ray& ray, float tMin, float tMax, CollisionInfo& 
 
 float Mesh::Area() {
     float area = 0.0f;
-    for (int32_t i = 0; i < vertices.size(); i += 3) {
-        const Vertex& v0 = vertices[i];
-        const Vertex& v1 = vertices[i + 1];
-        const Vertex& v2 = vertices[i + 2];
-        area += glm::length(glm::cross(vertices[i + 1].p - vertices[i].p, vertices[i + 2].p - vertices[i].p)) / 2.0;
+    for (int32_t i = 0; i < indices.size(); i += 3) {
+        const Vertex& v0 = vertices[indices[i]];
+        const Vertex& v1 = vertices[indices[i + 1]];
+        const Vertex& v2 = vertices[indices[i + 2]];
+        area += glm::length(glm::cross(vertices[indices[i + 1]].p - vertices[indices[i]].p, vertices[indices[i + 2]].p - vertices[indices[i]].p)) / 2.0;
     }
     return area;
 }

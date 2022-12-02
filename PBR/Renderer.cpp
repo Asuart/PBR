@@ -52,3 +52,7 @@ void Renderer::SetAccumulate(bool state) {
 void Renderer::SetFrameReady(bool state) {
 	frameReady = state;
 }
+
+glm::ivec2 Renderer::GetTextureSize() const {
+	return glm::ivec2(width, height);
+}

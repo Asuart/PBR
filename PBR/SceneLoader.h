@@ -9,7 +9,7 @@ class Scene;
 class SceneLoader {
 public:
 	static Scene* LoadScene(const std::string& filePath);
-	static SceneObject* LoadObject(const std::string& filePath);
+	static SceneObject* LoadObject(const std::string& filePath, Scene* _scene);
 private:
 	static Scene* currentScene;
 	static SceneObject* currentObject;

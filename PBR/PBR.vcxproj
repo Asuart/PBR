@@ -188,6 +188,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PDF.cpp" />
+    <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="SceneLoader.cpp" />
     <ClCompile Include="NoiseTexture.cpp" />
     <ClCompile Include="PerlinNoise.cpp" />
@@ -231,6 +232,7 @@
     <ClInclude Include="MeshBVH.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PDF.h" />
+    <ClInclude Include="Sampler.h" />
     <ClInclude Include="SceneLoader.h" />
     <ClInclude Include="NoiseTexture.h" />
     <ClInclude Include="PerlinNoise.h" />

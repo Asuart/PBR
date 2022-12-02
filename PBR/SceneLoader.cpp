@@ -26,7 +26,8 @@ Scene* SceneLoader::LoadScene(const std::string& filePath) {
 	return s;
 }
 
-SceneObject* SceneLoader::LoadObject(const std::string& filePath) {
+SceneObject* SceneLoader::LoadObject(const std::string& filePath, Scene* _scene) {
+	currentScene = _scene;
 	std::cout << "Loading scene from file: " << filePath << "\n";
 
 	Assimp::Importer importer;
@@ -42,6 +43,7 @@ SceneObject* SceneLoader::LoadObject(const std::string& filePath) {
 
 	SceneObject* s = currentObject;
 	currentObject = nullptr;
+	currentScene = nullptr;
 	return s;
 }
 
@@ -81,6 +83,37 @@ void SceneLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 		aiFace face = mesh->mFaces[i];
 		for (int32_t j = 0; j < face.mNumIndices; j++)
 			objectMesh.indices.push_back(face.mIndices[j]);
+	}
+
+	if (mesh->mMaterialIndex >= 0) {
+		std::cout << "Material name: " << scene->mMaterials[mesh->mMaterialIndex]->GetName().C_Str() << "\n";
+		aiColor4D color, colorEmissive, emissionIntensity;
+		float emissionInt, roughness;
+		aiGetMaterialColor(scene->mMaterials[mesh->mMaterialIndex], AI_MATKEY_COLOR_DIFFUSE, &color);
+		aiGetMaterialFloat(scene->mMaterials[mesh->mMaterialIndex], AI_MATKEY_EMISSIVE_INTENSITY, &emissionInt);
+		aiGetMaterialColor(scene->mMaterials[mesh->mMaterialIndex], AI_MATKEY_EMISSIVE_INTENSITY, &emissionIntensity);
+		aiGetMaterialColor(scene->mMaterials[mesh->mMaterialIndex], AI_MATKEY_COLOR_EMISSIVE, &colorEmissive);
+		aiGetMaterialFloat(scene->mMaterials[mesh->mMaterialIndex], AI_MATKEY_ROUGHNESS_FACTOR, &roughness);
+
+		Material mat;
+		mat.albedo = glm::vec3(color.r, color.g, color.b);
+		mat.roughness = 1.0;
+		mat.lightColor = glm::vec3(colorEmissive.r, colorEmissive.g, colorEmissive.b);
+
+		if (std::string(scene->mMaterials[mesh->mMaterialIndex]->GetName().C_Str()) == std::string("Glass")) {
+			mat.transparency = 1.0;
+			mat.refraction = 1.7;
+		}
+
+
+		std::cout << "	albedo: " << mat.albedo.x << " " << mat.albedo.y << " " << mat.albedo.z << "\n";
+		std::cout << "	emissionInt: " << emissionIntensity.r << " " << emissionIntensity.g << " " << emissionIntensity.b << " " << emissionIntensity.a << " (" << emissionInt << ")\n";
+		std::cout << "	colorEmissive: " << colorEmissive.r << " " << colorEmissive.g << " " << colorEmissive.b << " " << colorEmissive.a << "\n";
+		std::cout << "	roughness: " << roughness << "\n";
+
+		objectMesh.SetMaterial(currentScene->materials.size());
+		currentObject->SetMaterial(currentScene->materials.size());
+		currentScene->materials.push_back(mat);
 	}
 
 	ExtractBoneWeightForVertices(objectMesh.vertices, mesh, scene);

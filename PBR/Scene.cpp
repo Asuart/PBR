@@ -107,6 +107,7 @@ void Scene::CreateRandomScene() {
 	Material checkerMaterial;
 	checkerMaterial.albedo = glm::vec3(1.0f);
 	checkerMaterial.texture = checker;
+	checkerMaterial.roughness = 1.0f;
 	spheres.push_back(Sphere(glm::vec3(0, -1000, 0), 1000, materials.size()));
 	materials.push_back(checkerMaterial);
 
@@ -120,6 +121,7 @@ void Scene::CreateRandomScene() {
 
 				if (choose_mat < 0.8) {
 					sphere_material.albedo = RandomVector(0.0, 1.0) * RandomVector(0.0, 1.0);
+					sphere_material.roughness = 1.0f;
 					glm::vec3 center2 = center + glm::vec3(0, RandomFloat(0, 0.5), 0);
 				}
 				else if (choose_mat < 0.95) {
@@ -147,6 +149,7 @@ void Scene::CreateRandomScene() {
 
 	Material material2;
 	material2.albedo = glm::vec3(0.4, 0.2, 0.1);
+	material2.roughness = 1.0f;
 	spheres.push_back(Sphere(glm::vec3(-4, 1, 0), 1.0, materials.size()));
 	materials.push_back(material2);
 
@@ -159,8 +162,8 @@ void Scene::CreateRandomScene() {
 }
 
 void Scene::CreateCornellBoxScene() {
-	glm::vec3 lookfrom(277, 277, -800);
-	glm::vec3 lookat(277, 277, 0);
+	glm::vec3 lookfrom(-10, 0, 0);
+	glm::vec3 lookat(0, 0, 0);
 	glm::vec3 vup(0, 1, 0);
 	float fov = 40.0;
 	float aspect = 1.0;
@@ -170,6 +173,9 @@ void Scene::CreateCornellBoxScene() {
 	cameras.push_back(cam);
 	mainCamera = &cameras[cameras.size() - 1];
 
+	rootObject = new SceneObject("root");
+
+	/*
 	Material red;
 	red.albedo = glm::vec3(0.65, 0.05, 0.05);
 
@@ -183,10 +189,17 @@ void Scene::CreateCornellBoxScene() {
 	light.isLightSource = true;
 	light.lightColor = glm::vec3(15.0);
 
+	Material glass;
+	glass.albedo = glm::vec3(1.0);
+	glass.roughness = 0.0f;
+	glass.transparency = 1.0f;
+	glass.refraction = 1.7f;
+
 	materials.push_back(red);
 	materials.push_back(white);
 	materials.push_back(green);
 	materials.push_back(light);
+	materials.push_back(glass);
 
 	std::vector<glm::vec3> back;
 	back.push_back(glm::vec3(0, 0, 555));
@@ -234,7 +247,6 @@ void Scene::CreateCornellBoxScene() {
 	topLight.push_back(glm::vec3(343, 554, 322));
 	topLight.push_back(glm::vec3(343, 554, 227));
 
-	rootObject = new SceneObject("root");
 	SceneObject* ww = new SceneObject("White Walls", Transform(), 2);
 	ww->SetMesh(Mesh(back));
 	SceneObject* gw = new SceneObject("Green Wall", Transform(), 1);
@@ -260,12 +272,20 @@ void Scene::CreateCornellBoxScene() {
 	box->SetMesh(Mesh::CreateBox(box2Size));
 	rootObject->AddChild(box);
 
-	SceneObject* torus = SceneLoader::LoadObject("../models/torus.obj");
-	torus->SetTransform(Transform(glm::vec3(210, 250, 270), glm::vec3(0, PI, 0), glm::vec3(32)));
-	torus->SetMaterial(2);
+	*/
+
+	SceneObject* torus = SceneLoader::LoadObject("../models/cornellbox.obj", this);
 	rootObject->AddChild(torus);
 
+	//spheres.push_back(Sphere(glm::vec3(450, 75, 120), 75, 5));
+
 	UpdateObjectsWithMeshes();
+
+	for (int32_t i = 0; i < objectsWithMeshes.size(); i++) {
+		if (materials[objectsWithMeshes[i]->GetMaterial()].lightColor != glm::vec3(0)) {
+			lights.push_back(objectsWithMeshes[i]);
+		}
+	}
 }
 
 bool Scene::CheckCollision(Ray ray, float tMin, float tMax, CollisionInfo& outCollision) const {

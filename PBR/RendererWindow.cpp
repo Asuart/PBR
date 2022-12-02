@@ -25,8 +25,8 @@ void RendererWindow::Start() {
 
 	//m_scene->CreateBoxScene();
 	//m_scene->CreateTestScene();
-	//m_scene->CreateCornellBoxScene();
-	m_scene->CreateRandomScene();
+	m_scene->CreateCornellBoxScene();
+	//m_scene->CreateRandomScene();
 	//m_scene = SceneLoader::LoadScene("D:/repositories/MathVisualiser/ModelLoader/dae/vampire/dancing_vampire.dae");
 	//m_scene = SceneLoader::LoadScene("D:/repositories/MathVisualiser/ModelLoader/dae/spider.dae");
 
