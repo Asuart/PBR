@@ -1,4 +1,6 @@
 #pragma once
+#define GLM_ENABLE_EXPERIMENTAL
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -9,9 +11,13 @@
 #include <utility>
 #include <random>
 #include <vector>
+#include <array>
+#include <queue>
 #include <unordered_map>
 #include <map>
 #include <thread>
+#include <atomic>
+#include <mutex>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -23,10 +29,27 @@
 #include <assimp/postprocess.h>
 
 
+#define Float float
+#define Infinity std::numeric_limits<float>::infinity()
 #define PI 3.14159265359f
 #define INV_PI 1.0f / PI
 #define EPSILON 0.001f
 
+const Float ShadowEpsilon = 0.0001f;
+
+enum class TransportMode { Radiance, Importance };
+enum class LightFlags : int {
+	DeltaPosition = 1, DeltaDirection = 2, Area = 4, Infinite = 8
+};
+
+glm::vec3 UniformSampleSphere(const glm::vec2& u) {
+	Float z = 1 - 2 * u[0];
+	Float r = std::sqrt(std::max((Float)0, (Float)1 - z * z));
+	Float phi = 2 * PI * u[1];
+	return glm::vec3(r * std::cos(phi), r * std::sin(phi), z);
+}
+
+Float UniformSpherePdf() { return 1.0f / (PI * 4.0); }
 
 class AssimpGLMHelpers {
 public:

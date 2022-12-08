@@ -21,7 +21,6 @@ public:
 	virtual void StartRender() override;
 	virtual void EndRender() override;
 	virtual void DrawFrame() override;
-	virtual float GetProgress() const override;
 
 private:
 	GLuint defaultShaderProgram;

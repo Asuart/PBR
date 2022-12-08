@@ -4,10 +4,10 @@
 SamplerQuad::SamplerQuad(glm::ivec2 _start, glm::ivec2 _end) 
 	: start(_start), end(_end) {}
 
-Sampler::Sampler(const CPURayTracer* _renderer, int32_t _hQuads, int32_t _vQuads) 
+Sampler::Sampler(CPURayTracer* _renderer, int32_t _hQuads, int32_t _vQuads) 
 	: renderer(_renderer), hQuads(_hQuads), vQuads(_vQuads)
 {
-	size = renderer->GetTextureSize();
+	size = glm::ivec2(renderer->film->width, renderer->film->height);
 	glm::ivec2 quadSize = size / glm::ivec2(hQuads, vQuads);
 	glm::ivec2 align = size % quadSize;
 	for (int32_t y = 0; y < vQuads; y++) {
@@ -26,12 +26,19 @@ Sampler::Sampler(const CPURayTracer* _renderer, int32_t _hQuads, int32_t _vQuads
 Sampler::~Sampler() {}
 
 void Sampler::Dispatch() {
+	Time::MeasureStart("Sample Time");
+
 	for (int32_t i = 0; i < quads.size(); i++) {
-		renderThreads.push_back(new std::thread(std::thread([&, i]() {
-			SampleQuad(i);
+		quadQueue.push(i);
+	}
+	for (int32_t i = 0; i < threadsCount; i++) {
+		renderThreads.push_back(new std::thread(std::thread([&]() {
+			SampleQuad();
 			})));
 	}
+}
 
+void Sampler::Join() {
 	for (int32_t i = 0; i < renderThreads.size(); i++) {
 		renderThreads[i]->join();
 	}
@@ -39,13 +46,30 @@ void Sampler::Dispatch() {
 		delete renderThreads[i];
 	}
 	renderThreads.clear();
+	Time::MeasureEnd("Sample Time");
 }
 
-void Sampler::SampleQuad(int32_t i) {
-	SamplerQuad quad = quads[i];
-	for (int32_t y = quad.start.y; y < quad.end.y; y++) {
-		for (int32_t x = quad.start.x; x < quad.end.x; x++) {
-			renderer->PerPixel(x, y);
+void Sampler::SampleQuad() {
+	while (renderer->isRendering) {
+		quadQueueMutex.lock();
+		if (quadQueue.empty()) {
+			Time::MeasureEnd("Sample Time");
+			Time::MeasureStart("Sample Time");
+			renderer->sample += samplesPerPixel;
+			for (int32_t i = 0; i < quads.size(); i++) {
+				quadQueue.push(i);
+			}
+		}
+		int32_t index = quadQueue.front();
+		quadQueue.pop();
+		quadQueueMutex.unlock();
+		SamplerQuad quad = quads[index];
+		for (int32_t y = quad.start.y; y < quad.end.y; y++) {
+			for (int32_t x = quad.start.x; x < quad.end.x; x++) {
+				for (int32_t s = 0; s < samplesPerPixel; s++) {
+					renderer->PerPixel(x, y);
+				}
+			}
 		}
 	}
 }

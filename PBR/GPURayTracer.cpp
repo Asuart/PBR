@@ -23,18 +23,19 @@ GPURayTracer::GPURayTracer(int32_t width, int32_t height, bool accumulate)
 {
 	Resize(width, height);
 	SetAccumulate(accumulate);
-	SetupRenderQuad();
+
+	film = new Film(width, height);
+	film->SetupRenderQuad();
 
 	rayProgram = LoadComputeShader("C:/Users/User/Desktop/PBR/PBR/RayComputeShader.glsl");
 }
 
 GPURayTracer::~GPURayTracer() {
+	delete film;
 	delete[] trianglesBufferData;
 }
 
-void GPURayTracer::Reset() {
-	sample = 0;
-}
+void GPURayTracer::Reset() {}
 
 void GPURayTracer::SetScene(const Scene& scene) {
 	activeScene = &scene;
@@ -93,7 +94,6 @@ void GPURayTracer::SetCamera(const Camera& camera) {
 void GPURayTracer::Resize(int32_t _width, int32_t _height) {
 	width = _width;
 	height = _height;
-	pixelSize = glm::vec2(1.0f / width, 1.0f / height);
 }
 
 void GPURayTracer::RenderSample() {
@@ -114,19 +114,12 @@ void GPURayTracer::RenderSample() {
 		glFinish();
 	}
 
-	sample++;
-
 	frameReady = true;
 
 	Time::MeasureEnd("Time to sample");
 }
 
 void GPURayTracer::DrawFrame() {
-	glUseProgram(quadProgram);
-	glBindVertexArray(quadVAO);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, quadTexture);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
 	frameReady = false;
 }
 
@@ -137,8 +130,4 @@ void GPURayTracer::StartRender() {
 
 void GPURayTracer::EndRender() {
 
-}
-
-float GPURayTracer::GetProgress() const {
-	return 1.0f;
 }

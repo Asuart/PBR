@@ -68,12 +68,6 @@ void DefaultRenderer::DrawFrame() {
 		glDrawArrays(GL_TRIANGLES, 0, objects[i].trianglesCount);
 		glBindVertexArray(0);
 	}
-
-	sample++;
-}
-
-float DefaultRenderer::GetProgress() const {
-	return 1.0f;
 }
 
 void DefaultRenderer::FreeGPU() {

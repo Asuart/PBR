@@ -21,7 +21,8 @@ public:
 	void OnUpdate();
 
 private:
-	Renderer* m_renderer;
+	RayTracer* rayTracer;
+	//Renderer* m_renderer;
 	Scene* m_scene;
 
 	GLFWwindow* m_mainWindow;

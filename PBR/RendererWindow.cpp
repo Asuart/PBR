@@ -1,20 +1,26 @@
 #include "pch.h"
 #include "RendererWindow.h"
 
+void window_size_callback(GLFWwindow* window, int width, int height) {
+	int32_t min = glm::min(width, height);
+	glViewport(0, 0, min, min);
+}
+
 RendererWindow::RendererWindow(int32_t width, int32_t height)
-	: m_width(width), m_height(height), m_renderer(nullptr)
+	: m_width(width), m_height(height), rayTracer(nullptr)
 {
 	InitWindow();
 	InitGL();
 
-	m_renderer = new CPURayTracer(width, height);
+	rayTracer = new CPURayTracer(width, height);
 	//m_renderer = new DefaultRenderer();
 
+	glfwSetWindowSizeCallback(m_mainWindow, window_size_callback);
 	UserInput::SetInputWindow(m_mainWindow);
 }
 
 RendererWindow::~RendererWindow() {
-	delete m_renderer;
+	delete rayTracer;
 	delete m_scene;
 	glfwDestroyWindow(m_mainWindow);
 	glfwTerminate();
@@ -33,9 +39,9 @@ void RendererWindow::Start() {
 	//Animation danceAnimation("D:/repositories/MathVisualiser/ModelLoader/dae/vampire/dancing_vampire.dae", m_scene->objectsWithMeshes[0]);
 	//Animator animator(&danceAnimation);
 
-	m_renderer->SetScene(*m_scene);
-	m_renderer->SetCamera(*m_scene->mainCamera);
-	m_renderer->StartRender();
+	rayTracer->SetScene(m_scene);
+	rayTracer->SetCamera(m_scene->mainCamera);
+	rayTracer->StartRender();
 
 	float timeAccumulator = 0.0;
 
@@ -55,22 +61,16 @@ void RendererWindow::Start() {
 
 		OnUpdate();
 		
-		if (m_renderer->FrameIsReady()) {
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			m_renderer->DrawFrame();
-			glfwSwapBuffers(m_mainWindow);
-		}
-
 		timeAccumulator += Time::deltaTime;
 		if (timeAccumulator > 0.1) {
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			m_renderer->DrawFrame();
+			rayTracer->DrawQuad();
 			glfwSwapBuffers(m_mainWindow);
 
 
 			timeAccumulator = 0;
-			std::string newTitle = "Sample: " + std::to_string(m_renderer->CurrentSample()) + "  (" + std::to_string(m_renderer->GetProgress() * 100.0f).substr(0,5) + "%)";
+			std::string newTitle = "Sample: " + std::to_string(rayTracer->sample);
 			glfwSetWindowTitle(m_mainWindow, newTitle.c_str());
 		}
 
@@ -79,7 +79,7 @@ void RendererWindow::Start() {
 		glfwPollEvents();
 	}
 
-	m_renderer->EndRender();
+	rayTracer->EndRender();
 }
 
 void RendererWindow::OnUpdate() {
@@ -87,7 +87,7 @@ void RendererWindow::OnUpdate() {
 }
 
 void RendererWindow::InitWindow() {
-	if (glfwInit() != GLFW_TRUE) {
+	if (glfwInit() == 0) {
 		Logger::Error("GLFW initialization failed.");
 		exit(1);
 	}

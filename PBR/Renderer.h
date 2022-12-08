@@ -3,10 +3,13 @@
 #include "Random.h"
 #include "Scene.h"
 #include "ShaderLibrary.h"
-
+#include "Film.h"
 
 class Renderer {
 public:
+	Film* film;
+	int32_t sample = 0;
+
 	virtual void Reset() = 0;
 	virtual void SetScene(const Scene& scene) = 0;
 	virtual void SetCamera(const Camera& camera) = 0;
@@ -16,28 +19,16 @@ public:
 	virtual void EndRender() = 0;
 	virtual void DrawFrame() = 0;
 
-	virtual float GetProgress() const = 0;
 
-	virtual void SetupRenderQuad(const glm::vec2& min = glm::vec2(-1.0), const glm::vec2& max = glm::vec2(1.0));
-
-	virtual uint32_t CurrentSample() const;
 	virtual bool FrameIsReady() const;
 	virtual void SetAccumulate(bool state);
 	virtual void SetFrameReady(bool state);
-	glm::ivec2 GetTextureSize() const;
 protected:
 	uint32_t width, height;
-	glm::vec2 pixelSize;
-	int32_t sample;
 	uint32_t maxBounces;
 	bool accumulate;
 	bool frameReady;
 
 	const Scene* activeScene;
 	const Camera* activeCamera;
-
-	GLuint quadVAO;
-	GLuint quadVBO;
-	GLuint quadTexture;
-	GLuint quadProgram;
 };

@@ -15,7 +15,6 @@ public:
 
 	virtual void StartRender() override;
 	virtual void EndRender() override;
-	virtual float GetProgress() const override;
 
 private:
 	GLuint rayProgram;
