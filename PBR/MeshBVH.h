@@ -16,7 +16,7 @@ struct CachedTriangle {
 
 class MeshBVH {
 public:
-	const uint32_t maxTriangles = 32;
+	static const uint32_t maxTriangles = 32;
 
 	std::vector<MeshBVH*> children;
 	std::vector<CachedTriangle> triangles;

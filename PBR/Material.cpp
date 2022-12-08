@@ -62,6 +62,7 @@ glm::vec3 Material::Sample(const Ray& ray, const CollisionInfo& collision, Ray& 
 		}
 	}
 	else {
+		/*
 		direction = glm::reflect(ray.direction, collision.normal);
 		float theta = glm::acos(direction.z) + roughness * RandomFloat(-1.0, 1.0) * PI;
 		float phi = atan(direction.y / direction.x) + roughness * RandomFloat(-1.0, 1.0) * PI;
@@ -70,6 +71,8 @@ glm::vec3 Material::Sample(const Ray& ray, const CollisionInfo& collision, Ray& 
 		if (glm::dot(direction, collision.normal) < 0) {
 			direction = glm::reflect(direction, collision.normal);
 		}
+
+		*/
 
 		//direction = glm::normalize(Reflect(ray.direction, collision.normal) * invRoughness2 + uvw.local(RandomCosineDirection()) * roughness);
 		direction = glm::normalize(uvw.local(RandomCosineDirection()));

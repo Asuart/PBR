@@ -1,18 +1,12 @@
 #pragma once
-#include "Renderer.h"
+#include "RayTracer.h"
 
-class GPURayTracer : public Renderer {
+class GPURayTracer : public RayTracer {
 public:
 	GPURayTracer(int32_t width, int32_t height, bool accumulate = true);
 	~GPURayTracer();
 
-	virtual void Reset() override;
-	virtual void SetScene(const Scene& scene) override;
-	virtual void SetCamera(const Camera& camera) override;
-	virtual void Resize(int32_t width, int32_t height) override;
-	virtual void RenderSample() override;
-	virtual void DrawFrame() override;
-
+	virtual void SetScene(Scene* s) override;
 	virtual void StartRender() override;
 	virtual void EndRender() override;
 
@@ -22,6 +16,10 @@ private:
 	int32_t trianglesCount;
 	int32_t* trianglesBufferData;
 	GLuint trianglesBuffer;
+
+	int32_t bvhNodesCount, bvhLeafsCount;
+	GLuint bvhNodesBuffer, bvhLeafsBuffer;
+	int32_t* bvhNodesBufferData, bvhLeafsBufferData;
 
 	GLuint hitResultsBuffer;
 };

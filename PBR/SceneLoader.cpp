@@ -105,7 +105,6 @@ void SceneLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene) {
 			mat.refraction = 1.7;
 		}
 
-
 		std::cout << "	albedo: " << mat.albedo.x << " " << mat.albedo.y << " " << mat.albedo.z << "\n";
 		std::cout << "	emissionInt: " << emissionIntensity.r << " " << emissionIntensity.g << " " << emissionIntensity.b << " " << emissionIntensity.a << " (" << emissionInt << ")\n";
 		std::cout << "	colorEmissive: " << colorEmissive.r << " " << colorEmissive.g << " " << colorEmissive.b << " " << colorEmissive.a << "\n";

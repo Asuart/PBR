@@ -17,13 +17,20 @@ struct HitResultAligned {
 	glm::vec4 normal; // normal
 };
 
+struct PackedBVHNode {
+	glm::vec4 bbMin, bbMax;
+	int32_t leftIndex;
+	int32_t rightIndex;
+	int32_t leafIndex;
+	int32_t isLeaf;
+};
+
+struct PackedBVHLeaf {
+	int32_t triangleIndexes[MeshBVH::maxTriangles];
+};
 
 GPURayTracer::GPURayTracer(int32_t width, int32_t height, bool accumulate)
-	: trianglesCount(0), trianglesBufferData(nullptr)
-{
-	Resize(width, height);
-	SetAccumulate(accumulate);
-
+	: RayTracer(width, height, 6), trianglesCount(0), trianglesBufferData(nullptr) {
 	film = new Film(width, height);
 	film->SetupRenderQuad();
 
@@ -35,14 +42,12 @@ GPURayTracer::~GPURayTracer() {
 	delete[] trianglesBufferData;
 }
 
-void GPURayTracer::Reset() {}
-
-void GPURayTracer::SetScene(const Scene& scene) {
-	activeScene = &scene;
+void GPURayTracer::SetScene(Scene* s) {
+	scene = s;
 	
 	std::vector<TriangleAligned> encodedTriangles;
 
-	auto objects = activeScene->GetObjectWithMeshes();
+	auto objects = scene->GetObjectWithMeshes();
 	for (int32_t i = 0; i < objects.size(); i++) {
 		Mesh mesh = objects[i]->GetMesh();
 		for (int32_t i = 0; i < mesh.indices.size(); i += 3) {
@@ -57,21 +62,7 @@ void GPURayTracer::SetScene(const Scene& scene) {
 			encodedTriangles.push_back(tri);
 		}
 	}
-	
 
-
-	/*
-	TriangleAligned t;
-	t.p1 = glm::vec4(0, 0, 0, 1);
-	t.p2 = glm::vec4(0, 1, 0, 1);
-	t.p3 = glm::vec4(1, 0, 0, 1);
-	t.n1 = glm::vec4(0, 0, 1, 1);
-	t.n2 = glm::vec4(0, 0, 1, 1);
-	t.n3 = glm::vec4(0, 0, 1, 1);
-	t.baseColor = glm::vec4(1.0, 1.0, 0.0, 1);
-
-	encodedTriangles.push_back(t);
-		*/
 	trianglesCount = encodedTriangles.size();
 
 	glGenBuffers(1, &trianglesBuffer);
@@ -82,21 +73,12 @@ void GPURayTracer::SetScene(const Scene& scene) {
 
 	glGenBuffers(1, &hitResultsBuffer);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, hitResultsBuffer);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, width * height * sizeof(HitResultAligned), nullptr, GL_STATIC_DRAW);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, film->width * film->height * sizeof(HitResultAligned), nullptr, GL_STATIC_DRAW);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, hitResultsBuffer);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-void GPURayTracer::SetCamera(const Camera& camera) {
-	activeCamera = &camera;
-}
-
-void GPURayTracer::Resize(int32_t _width, int32_t _height) {
-	width = _width;
-	height = _height;
-}
-
-void GPURayTracer::RenderSample() {
+void GPURayTracer::StartRender() {
 	Time::MeasureStart("Time to sample");
 	glUseProgram(rayProgram);
 
@@ -105,27 +87,16 @@ void GPURayTracer::RenderSample() {
 
 	glUniform1i(glGetUniformLocation(rayProgram, "TRIANGLES_COUNT"), trianglesCount);
 	glUniform1i(glGetUniformLocation(rayProgram, "PATCH_SIZE"), patchSize);
-	glUniform1i(glGetUniformLocation(rayProgram, "MAX_BOUNCES"), 5);
+	glUniform1i(glGetUniformLocation(rayProgram, "MAX_BOUNCES"), maxBounces);
 
 	for (int32_t i = 0; i < patchesCount; i++) {
 		glUniform1i(glGetUniformLocation(rayProgram, "PATCH_INDEX"), i);
-		glDispatchCompute((GLuint)width, (GLuint)height, 1);
+		glDispatchCompute((GLuint)film->width, (GLuint)film->height, 1);
 		glMemoryBarrier(GL_ALL_BARRIER_BITS);
 		glFinish();
 	}
 
-	frameReady = true;
-
 	Time::MeasureEnd("Time to sample");
-}
-
-void GPURayTracer::DrawFrame() {
-	frameReady = false;
-}
-
-
-void GPURayTracer::StartRender() {
-
 }
 
 void GPURayTracer::EndRender() {

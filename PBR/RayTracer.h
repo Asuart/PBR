@@ -13,7 +13,6 @@ public:
 	RayTracer(int32_t _width, int32_t _height, int32_t _maxBounces);
 	~RayTracer();
 
-	virtual void SetCamera(Camera* cam);
 	virtual void SetScene(Scene* scene);
 	virtual void StartRender() = 0;
 	virtual void EndRender() = 0;
